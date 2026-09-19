@@ -1,0 +1,214 @@
+﻿{
+  "id": "template-personal-loan",
+  "name": "Personal Loan Journey",
+  "description": "High-velocity straight-through processing (STP) unsecured consumer loan flow with instant decisioning.",
+  "category": "Consumer Lending",
+  "badge": "Unsecured",
+  "journey": {
+    "id": "journey-personal-loan-default",
+    "title": "Instant Personal Loan",
+    "description": "Frictionless digital journey for salaried and self-employed personal loans under $50,000.",
+    "version": "1.2.0",
+    "status": "published",
+    "createdAt": "2026-09-18T11:00:00.000Z",
+    "updatedAt": "2026-09-18T11:00:00.000Z",
+    "createdBy": "Fintech Template Library",
+    "updatedBy": "Fintech Template Library",
+    "metadata": {
+      "productType": "UNSECURED_RETAIL",
+      "disbursementTime": "< 10 minutes"
+    },
+    "isPinned": true,
+    "nodes": [
+      {
+        "id": "stage-auth",
+        "type": "STAGE",
+        "position": { "x": 60, "y": 80 },
+        "size": { "width": 320, "height": 280 },
+        "data": {
+          "title": "Authentication & Profile",
+          "description": "Mobile OTP login and identity resolution",
+          "stageNumber": 1,
+          "status": "completed",
+          "identifier": "AUTH_PROFILE",
+          "color": "blue"
+        }
+      },
+      {
+        "id": "act-mobile-auth",
+        "type": "ACTIVITY",
+        "parentId": "stage-auth",
+        "position": { "x": 24, "y": 64 },
+        "size": { "width": 272, "height": 76 },
+        "data": {
+          "title": "Mobile OTP Verification",
+          "description": "2-factor authentication & device fingerprinting",
+          "category": "verification",
+          "status": "completed",
+          "color": "blue"
+        }
+      },
+      {
+        "id": "act-aadhaar-kyc",
+        "type": "ACTIVITY",
+        "parentId": "stage-auth",
+        "position": { "x": 24, "y": 160 },
+        "size": { "width": 272, "height": 76 },
+        "data": {
+          "title": "Instant Pan/KYC Check",
+          "description": "Automated government database identity lookup",
+          "category": "verification",
+          "status": "completed",
+          "color": "blue"
+        }
+      },
+      {
+        "id": "stage-offer",
+        "type": "STAGE",
+        "position": { "x": 460, "y": 80 },
+        "size": { "width": 320, "height": 280 },
+        "data": {
+          "title": "Credit & Offer Selection",
+          "description": "Real-time bureau query and personalized quote",
+          "stageNumber": 2,
+          "status": "in_progress",
+          "identifier": "OFFER_STAGE",
+          "color": "cyan"
+        }
+      },
+      {
+        "id": "act-aa-consent",
+        "type": "ACTIVITY",
+        "parentId": "stage-offer",
+        "position": { "x": 24, "y": 64 },
+        "size": { "width": 272, "height": 76 },
+        "data": {
+          "title": "Open Banking AA Fetch",
+          "description": "Real-time bank statements via Account Aggregator",
+          "category": "documentation",
+          "status": "in_progress",
+          "color": "cyan"
+        }
+      },
+      {
+        "id": "act-custom-slider",
+        "type": "ACTIVITY",
+        "parentId": "stage-offer",
+        "position": { "x": 24, "y": 160 },
+        "size": { "width": 272, "height": 76 },
+        "data": {
+          "title": "Tenure & Amount Selection",
+          "description": "Interactive slider for loan amount & EMI plan",
+          "category": "custom",
+          "status": "in_progress",
+          "color": "cyan"
+        }
+      },
+      {
+        "id": "dec-auto-underwrite",
+        "type": "DECISION",
+        "position": { "x": 860, "y": 120 },
+        "size": { "width": 260, "height": 180 },
+        "data": {
+          "title": "Instant Decision Engine",
+          "description": "Machine learning credit score and fraud detection",
+          "color": "purple",
+          "conditions": [
+            {
+              "id": "cond-stp-pass",
+              "label": "Instant STP",
+              "expression": "fraud_score < 0.05 && bureau >= 750",
+              "description": "Immediate sanction letter generation"
+            },
+            {
+              "id": "cond-salary-slip",
+              "label": "Doc Verification",
+              "expression": "bureau >= 680 && bureau < 750",
+              "description": "Upload last 3 months pay slips"
+            }
+          ]
+        }
+      },
+      {
+        "id": "stage-instant-payout",
+        "type": "STAGE",
+        "position": { "x": 1200, "y": 80 },
+        "size": { "width": 320, "height": 280 },
+        "data": {
+          "title": "Contract & Disbursement",
+          "description": "Mandate setup and account crediting",
+          "stageNumber": 3,
+          "status": "draft",
+          "identifier": "DISBURSEMENT_FINAL",
+          "color": "green"
+        }
+      },
+      {
+        "id": "act-emandate",
+        "type": "ACTIVITY",
+        "parentId": "stage-instant-payout",
+        "position": { "x": 24, "y": 64 },
+        "size": { "width": 272, "height": 76 },
+        "data": {
+          "title": "e-NACH Auto Debit",
+          "description": "Automated monthly repayment mandate registration",
+          "category": "servicing",
+          "status": "draft",
+          "color": "green"
+        }
+      },
+      {
+        "id": "act-bank-transfer",
+        "type": "ACTIVITY",
+        "parentId": "stage-instant-payout",
+        "position": { "x": 24, "y": 160 },
+        "size": { "width": 272, "height": 76 },
+        "data": {
+          "title": "Instant Account Crediting",
+          "description": "Immediate payment rails (IMPS/FedNow) transfer",
+          "category": "disbursement",
+          "status": "draft",
+          "color": "green"
+        }
+      },
+      {
+        "id": "note-stp-target",
+        "type": "NOTE",
+        "position": { "x": 860, "y": 340 },
+        "size": { "width": 260, "height": 130 },
+        "data": {
+          "title": "SLA Benchmark",
+          "content": "Target: 80% of personal loans should achieve zero-touch approval in under 3 minutes.",
+          "color": "blue"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "edge-pl-1-to-2",
+        "source": "stage-auth",
+        "target": "stage-offer",
+        "sourceHandle": "right",
+        "targetHandle": "left",
+        "label": "Verified User"
+      },
+      {
+        "id": "edge-pl-2-to-dec",
+        "source": "stage-offer",
+        "target": "dec-auto-underwrite",
+        "sourceHandle": "right",
+        "targetHandle": "left",
+        "label": "Evaluate Profile"
+      },
+      {
+        "id": "edge-pl-dec-stp",
+        "source": "dec-auto-underwrite",
+        "target": "stage-instant-payout",
+        "sourceHandle": "condition-cond-stp-pass",
+        "targetHandle": "left",
+        "label": "Direct STP Disbursal",
+        "conditionId": "cond-stp-pass"
+      }
+    ]
+  }
+}

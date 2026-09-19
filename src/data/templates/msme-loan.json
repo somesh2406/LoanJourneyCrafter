@@ -1,0 +1,248 @@
+﻿{
+  "id": "template-msme-loan",
+  "name": "MSME Loan Journey",
+  "description": "Commercial SME working capital and term loan journey with GST reconciliation and financial spread analysis.",
+  "category": "Commercial Lending",
+  "badge": "Business",
+  "journey": {
+    "id": "journey-msme-loan-default",
+    "title": "MSME Working Capital Loan",
+    "description": "End-to-end commercial lending workflow for small and medium enterprises up to $1,000,000.",
+    "version": "2.0.0",
+    "status": "published",
+    "createdAt": "2026-09-18T12:00:00.000Z",
+    "updatedAt": "2026-09-18T12:00:00.000Z",
+    "createdBy": "Fintech Template Library",
+    "updatedBy": "Fintech Template Library",
+    "metadata": {
+      "productType": "SECURED_COMMERCIAL",
+      "turnaroundTime": "48 hours"
+    },
+    "isPinned": false,
+    "nodes": [
+      {
+        "id": "stage-entity-onboard",
+        "type": "STAGE",
+        "position": { "x": 60, "y": 80 },
+        "size": { "width": 320, "height": 370 },
+        "data": {
+          "title": "Business Verification",
+          "description": "Commercial registration and promoter KYC",
+          "stageNumber": 1,
+          "status": "completed",
+          "identifier": "BIZ_KYC",
+          "color": "blue"
+        }
+      },
+      {
+        "id": "act-biz-reg",
+        "type": "ACTIVITY",
+        "parentId": "stage-entity-onboard",
+        "position": { "x": 24, "y": 64 },
+        "size": { "width": 272, "height": 76 },
+        "data": {
+          "title": "Corporate Entity Ingestion",
+          "description": "Tax identification (EIN/GST) and Articles of Inc.",
+          "category": "documentation",
+          "status": "completed",
+          "color": "blue"
+        }
+      },
+      {
+        "id": "act-promoter-kyc",
+        "type": "ACTIVITY",
+        "parentId": "stage-entity-onboard",
+        "position": { "x": 24, "y": 160 },
+        "size": { "width": 272, "height": 76 },
+        "data": {
+          "title": "Key Promoter Identity",
+          "description": "Beneficial ownership (>25%) biometric e-sign",
+          "category": "verification",
+          "status": "completed",
+          "color": "blue"
+        }
+      },
+      {
+        "id": "act-aml-sanction",
+        "type": "ACTIVITY",
+        "parentId": "stage-entity-onboard",
+        "position": { "x": 24, "y": 256 },
+        "size": { "width": 272, "height": 76 },
+        "data": {
+          "title": "AML & Sanctions Screening",
+          "description": "Watchlist, PEP, and adverse media automated sweep",
+          "category": "verification",
+          "status": "completed",
+          "color": "blue"
+        }
+      },
+      {
+        "id": "stage-financial-analysis",
+        "type": "STAGE",
+        "position": { "x": 460, "y": 80 },
+        "size": { "width": 320, "height": 370 },
+        "data": {
+          "title": "Financial Spread Analysis",
+          "description": "Cashflow, GST turnover, and DSCR computation",
+          "stageNumber": 2,
+          "status": "in_progress",
+          "identifier": "FIN_SPREAD",
+          "color": "purple"
+        }
+      },
+      {
+        "id": "act-gst-recon",
+        "type": "ACTIVITY",
+        "parentId": "stage-financial-analysis",
+        "position": { "x": 24, "y": 64 },
+        "size": { "width": 272, "height": 76 },
+        "data": {
+          "title": "GST / Tax Turnover Recon",
+          "description": "Monthly filings vs. bank deposits reconciliation",
+          "category": "underwriting",
+          "status": "in_progress",
+          "color": "purple"
+        }
+      },
+      {
+        "id": "act-dscr-calc",
+        "type": "ACTIVITY",
+        "parentId": "stage-financial-analysis",
+        "position": { "x": 24, "y": 160 },
+        "size": { "width": 272, "height": 76 },
+        "data": {
+          "title": "Debt Service Ratio (DSCR)",
+          "description": "EBITDA debt servicing buffer calculation",
+          "category": "underwriting",
+          "status": "in_progress",
+          "color": "purple"
+        }
+      },
+      {
+        "id": "act-site-inspection",
+        "type": "ACTIVITY",
+        "parentId": "stage-financial-analysis",
+        "position": { "x": 24, "y": 256 },
+        "size": { "width": 272, "height": 76 },
+        "data": {
+          "title": "Business Premises Geo-Check",
+          "description": "Field officer digital visit & inventory tagging",
+          "category": "verification",
+          "status": "in_progress",
+          "color": "purple"
+        }
+      },
+      {
+        "id": "dec-committee-tier",
+        "type": "DECISION",
+        "position": { "x": 860, "y": 140 },
+        "size": { "width": 260, "height": 210 },
+        "data": {
+          "title": "Credit Committee Tier",
+          "description": "Delegated lending authority matrix",
+          "color": "amber",
+          "conditions": [
+            {
+              "id": "cond-fast-sanction",
+              "label": "Auto Sanction (<$250k)",
+              "expression": "amount <= 250000 && DSCR >= 1.5",
+              "description": "Delegated branch manager signoff"
+            },
+            {
+              "id": "cond-credit-comm",
+              "label": "Committee Review",
+              "expression": "amount > 250000 && DSCR >= 1.25",
+              "description": "Regional credit committee docket"
+            },
+            {
+              "id": "cond-msme-decline",
+              "label": "Decline",
+              "expression": "DSCR < 1.25 || negative_lien == true",
+              "description": "Working capital deficit"
+            }
+          ]
+        }
+      },
+      {
+        "id": "stage-disbursal-covenants",
+        "type": "STAGE",
+        "position": { "x": 1200, "y": 80 },
+        "size": { "width": 320, "height": 280 },
+        "data": {
+          "title": "Closing & Covenants",
+          "description": "Security charge creation and line activation",
+          "stageNumber": 3,
+          "status": "draft",
+          "identifier": "CLOSING",
+          "color": "green"
+        }
+      },
+      {
+        "id": "act-roc-charge",
+        "type": "ACTIVITY",
+        "parentId": "stage-disbursal-covenants",
+        "position": { "x": 24, "y": 64 },
+        "size": { "width": 272, "height": 76 },
+        "data": {
+          "title": "Registrar Charge Filing",
+          "description": "Form CHG-1 hypothecation filing for security",
+          "category": "documentation",
+          "status": "draft",
+          "color": "green"
+        }
+      },
+      {
+        "id": "act-line-active",
+        "type": "ACTIVITY",
+        "parentId": "stage-disbursal-covenants",
+        "position": { "x": 24, "y": 160 },
+        "size": { "width": 272, "height": 76 },
+        "data": {
+          "title": "Overdraft Line Activation",
+          "description": "Core Banking CBS limit setup and net banking release",
+          "category": "disbursement",
+          "status": "draft",
+          "color": "green"
+        }
+      },
+      {
+        "id": "note-covenant-notice",
+        "type": "NOTE",
+        "position": { "x": 860, "y": 400 },
+        "size": { "width": 260, "height": 130 },
+        "data": {
+          "title": "Statutory Note",
+          "content": "Quarterly stock statements and GST turnover compliance must be submitted within 30 days of quarter close.",
+          "color": "neutral"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "edge-msme-1-to-2",
+        "source": "stage-entity-onboard",
+        "target": "stage-financial-analysis",
+        "sourceHandle": "right",
+        "targetHandle": "left",
+        "label": "KYC Verified"
+      },
+      {
+        "id": "edge-msme-2-to-dec",
+        "source": "stage-financial-analysis",
+        "target": "dec-committee-tier",
+        "sourceHandle": "right",
+        "targetHandle": "left",
+        "label": "DSCR Approved"
+      },
+      {
+        "id": "edge-msme-dec-to-close",
+        "source": "dec-committee-tier",
+        "target": "stage-disbursal-covenants",
+        "sourceHandle": "condition-cond-fast-sanction",
+        "targetHandle": "left",
+        "label": "Sanction Approved",
+        "conditionId": "cond-fast-sanction"
+      }
+    ]
+  }
+}

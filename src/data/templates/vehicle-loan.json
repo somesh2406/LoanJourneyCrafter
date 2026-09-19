@@ -1,0 +1,243 @@
+﻿{
+  "id": "template-vehicle-loan",
+  "name": "Vehicle Loan Journey",
+  "description": "End-to-end auto loan origination workflow including dealer lead capture, collateral valuation, and instant sanctioning.",
+  "category": "Auto Finance",
+  "badge": "Automotive",
+  "journey": {
+    "id": "journey-vehicle-loan-default",
+    "title": "Vehicle Loan Origination",
+    "description": "Standard four-wheeler retail auto loan origination and disbursement lifecycle.",
+    "version": "1.0.0",
+    "status": "published",
+    "createdAt": "2026-09-18T10:00:00.000Z",
+    "updatedAt": "2026-09-18T10:00:00.000Z",
+    "createdBy": "Fintech Template Library",
+    "updatedBy": "Fintech Template Library",
+    "metadata": {
+      "productType": "SECURED_AUTO",
+      "maxLTV": "85%"
+    },
+    "isPinned": true,
+    "nodes": [
+      {
+        "id": "stage-lead",
+        "type": "STAGE",
+        "position": { "x": 60, "y": 80 },
+        "size": { "width": 320, "height": 280 },
+        "data": {
+          "title": "Lead & Application",
+          "description": "Initial customer onboarding and dealer intake",
+          "stageNumber": 1,
+          "status": "completed",
+          "identifier": "LEAD_INGESTION",
+          "color": "blue"
+        }
+      },
+      {
+        "id": "act-lead-capture",
+        "type": "ACTIVITY",
+        "parentId": "stage-lead",
+        "position": { "x": 24, "y": 64 },
+        "size": { "width": 272, "height": 76 },
+        "data": {
+          "title": "Dealer Lead Capture",
+          "description": "VIN, make/model, and buyer phone verification",
+          "category": "documentation",
+          "status": "completed",
+          "color": "blue"
+        }
+      },
+      {
+        "id": "act-kyc",
+        "type": "ACTIVITY",
+        "parentId": "stage-lead",
+        "position": { "x": 24, "y": 160 },
+        "size": { "width": 272, "height": 76 },
+        "data": {
+          "title": "KYC & Identity Verification",
+          "description": "National ID biometric e-KYC and liveness test",
+          "category": "verification",
+          "status": "completed",
+          "color": "blue"
+        }
+      },
+      {
+        "id": "stage-underwriting",
+        "type": "STAGE",
+        "position": { "x": 460, "y": 80 },
+        "size": { "width": 320, "height": 370 },
+        "data": {
+          "title": "Underwriting & Valuation",
+          "description": "Financial eligibility and collateral valuation",
+          "stageNumber": 2,
+          "status": "in_progress",
+          "identifier": "UNDERWRITING",
+          "color": "purple"
+        }
+      },
+      {
+        "id": "act-credit-pull",
+        "type": "ACTIVITY",
+        "parentId": "stage-underwriting",
+        "position": { "x": 24, "y": 64 },
+        "size": { "width": 272, "height": 76 },
+        "data": {
+          "title": "Credit Bureau Pull",
+          "description": "FICO/TransUnion credit score and debt ratio",
+          "category": "underwriting",
+          "status": "in_progress",
+          "color": "purple"
+        }
+      },
+      {
+        "id": "act-valuation",
+        "type": "ACTIVITY",
+        "parentId": "stage-underwriting",
+        "position": { "x": 24, "y": 160 },
+        "size": { "width": 272, "height": 76 },
+        "data": {
+          "title": "Vehicle Valuation Check",
+          "description": "Automated valuation model (AVM) on vehicle VIN",
+          "category": "verification",
+          "status": "in_progress",
+          "color": "purple"
+        }
+      },
+      {
+        "id": "act-bank-stmt",
+        "type": "ACTIVITY",
+        "parentId": "stage-underwriting",
+        "position": { "x": 24, "y": 256 },
+        "size": { "width": 272, "height": 76 },
+        "data": {
+          "title": "Bank Statement Aggregation",
+          "description": "6-month cashflow and salary credit validation",
+          "category": "documentation",
+          "status": "in_progress",
+          "color": "purple"
+        }
+      },
+      {
+        "id": "dec-credit-rule",
+        "type": "DECISION",
+        "position": { "x": 860, "y": 160 },
+        "size": { "width": 260, "height": 180 },
+        "data": {
+          "title": "Risk Policy Decision",
+          "description": "Rule-based underwriting engine evaluation",
+          "color": "amber",
+          "conditions": [
+            {
+              "id": "cond-appr",
+              "label": "Approved",
+              "expression": "score >= 720 && LTV <= 0.85",
+              "description": "Instant approval for Tier 1 applicants"
+            },
+            {
+              "id": "cond-manual",
+              "label": "Manual Review",
+              "expression": "score >= 640 && score < 720",
+              "description": "Senior credit officer review required"
+            },
+            {
+              "id": "cond-rej",
+              "label": "Rejected",
+              "expression": "score < 640 || DTI > 0.50",
+              "description": "Exceeds risk appetite thresholds"
+            }
+          ]
+        }
+      },
+      {
+        "id": "stage-sanction",
+        "type": "STAGE",
+        "position": { "x": 1200, "y": 80 },
+        "size": { "width": 320, "height": 280 },
+        "data": {
+          "title": "Sanction & Disbursal",
+          "description": "Loan contract execution and dealer payout",
+          "stageNumber": 3,
+          "status": "draft",
+          "identifier": "DISBURSAL",
+          "color": "green"
+        }
+      },
+      {
+        "id": "act-esign",
+        "type": "ACTIVITY",
+        "parentId": "stage-sanction",
+        "position": { "x": 24, "y": 64 },
+        "size": { "width": 272, "height": 76 },
+        "data": {
+          "title": "Loan Agreement E-Sign",
+          "description": "Digital contract execution via OTP and e-mandate",
+          "category": "documentation",
+          "status": "draft",
+          "color": "green"
+        }
+      },
+      {
+        "id": "act-disbursal",
+        "type": "ACTIVITY",
+        "parentId": "stage-sanction",
+        "position": { "x": 24, "y": 160 },
+        "size": { "width": 272, "height": 76 },
+        "data": {
+          "title": "Dealer Account Disbursal",
+          "description": "Real-time RTGS funds transfer to authorized dealership",
+          "category": "disbursement",
+          "status": "draft",
+          "color": "green"
+        }
+      },
+      {
+        "id": "note-vehicle-guidelines",
+        "type": "NOTE",
+        "position": { "x": 860, "y": 380 },
+        "size": { "width": 260, "height": 130 },
+        "data": {
+          "title": "Down Payment Policy",
+          "content": "All approved loans must enforce a minimum 15% customer margin money deposit prior to final dealer payout.",
+          "color": "amber"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "edge-stage-1-to-2",
+        "source": "stage-lead",
+        "target": "stage-underwriting",
+        "sourceHandle": "right",
+        "targetHandle": "left",
+        "label": "Submit Application"
+      },
+      {
+        "id": "edge-underwrite-to-decision",
+        "source": "stage-underwriting",
+        "target": "dec-credit-rule",
+        "sourceHandle": "right",
+        "targetHandle": "left",
+        "label": "Run Assessment"
+      },
+      {
+        "id": "edge-decision-approved",
+        "source": "dec-credit-rule",
+        "target": "stage-sanction",
+        "sourceHandle": "condition-cond-appr",
+        "targetHandle": "left",
+        "label": "Approved",
+        "conditionId": "cond-appr"
+      },
+      {
+        "id": "edge-decision-manual",
+        "source": "dec-credit-rule",
+        "target": "stage-underwriting",
+        "sourceHandle": "condition-cond-manual",
+        "targetHandle": "bottom",
+        "label": "Request Additional Info",
+        "conditionId": "cond-manual"
+      }
+    ]
+  }
+}
