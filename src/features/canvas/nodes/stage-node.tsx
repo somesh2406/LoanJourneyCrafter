@@ -1,13 +1,12 @@
 import * as React from "react";
-import { Handle, Position, NodeProps, NodeResizer } from "@xyflow/react";
 import {
-  ChevronDown,
-  ChevronRight,
-  MoreVertical,
-  Plus,
-  Trash2,
-  Layers,
-} from "lucide-react";
+  Handle,
+  Position,
+  NodeProps,
+  NodeResizer,
+  useUpdateNodeInternals,
+} from "@xyflow/react";
+import { ChevronDown, ChevronRight, Plus, Trash2, Layers } from "lucide-react";
 import { EditorNodeData } from "@/domain/journey/mapper";
 import { getColorScheme } from "@/config/colors";
 import { useJourneyStore } from "@/stores/journey-store";
@@ -21,6 +20,16 @@ export function StageNode({ id, data, selected, width, height }: NodeProps) {
   const nodeData = data as EditorNodeData;
   const colorScheme = getColorScheme(nodeData.color as string);
   const isCollapsed = !!nodeData.isCollapsed;
+
+  const updateNodeInternals = useUpdateNodeInternals();
+
+  React.useEffect(() => {
+    updateNodeInternals(id);
+    const raf = requestAnimationFrame(() => {
+      updateNodeInternals(id);
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [isCollapsed, height, id, updateNodeInternals]);
 
   const nodes = useJourneyStore((s) => s.nodes);
   const edges = useJourneyStore((s) => s.edges);
@@ -237,13 +246,15 @@ export function StageNode({ id, data, selected, width, height }: NodeProps) {
           )}
 
           <DropdownMenu
+            usePortal={true}
             trigger={
               <button
                 type="button"
-                className="rounded p-1 text-slate-400 hover:bg-black/5 hover:text-slate-700 transition-colors cursor-pointer z-50"
+                className="rounded p-1 text-slate-500 hover:bg-black/5 hover:text-slate-800 transition-colors cursor-pointer z-50"
                 aria-label="Stage actions menu"
+                title="Stage actions"
               >
-                <MoreVertical className="h-4 w-4" />
+                <Plus className="h-4 w-4" />
               </button>
             }
             items={menuItems}

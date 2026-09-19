@@ -1,16 +1,20 @@
-import * as React from 'react';
-import { Layers, Sparkles } from 'lucide-react';
-import { Dialog, DialogFooter } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { TEMPLATES } from '@/data/templates';
-import { cn } from '@/utils/cn';
+import * as React from "react";
+import { Layers, Sparkles } from "lucide-react";
+import { Dialog, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { TEMPLATES } from "@/data/templates";
+import { cn } from "@/utils/cn";
 
 export interface CreateJourneyDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (data: { title: string; description: string; templateId?: string }) => Promise<void>;
+  onSubmit: (data: {
+    title: string;
+    description: string;
+    templateId?: string;
+  }) => Promise<void>;
   preselectedTemplateId?: string;
 }
 
@@ -20,9 +24,11 @@ export function CreateJourneyDialog({
   onSubmit,
   preselectedTemplateId,
 }: CreateJourneyDialogProps) {
-  const [title, setTitle] = React.useState('');
-  const [description, setDescription] = React.useState('');
-  const [selectedTemplateId, setSelectedTemplateId] = React.useState<string | undefined>(preselectedTemplateId);
+  const [title, setTitle] = React.useState("");
+  const [description, setDescription] = React.useState("");
+  const [selectedTemplateId, setSelectedTemplateId] = React.useState<
+    string | undefined
+  >(preselectedTemplateId);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   React.useEffect(() => {
@@ -35,8 +41,8 @@ export function CreateJourneyDialog({
           setDescription(tmpl.journey.description);
         }
       } else {
-        setTitle('');
-        setDescription('');
+        setTitle("");
+        setDescription("");
         setSelectedTemplateId(undefined);
       }
     }
@@ -98,20 +104,28 @@ export function CreateJourneyDialog({
           </label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div
-              onClick={() => setSelectedTemplateId(undefined)}
+              onClick={() => {
+                setSelectedTemplateId(undefined);
+                setTitle("");
+                setDescription("");
+              }}
               className={cn(
-                'flex items-center gap-2.5 rounded-lg border p-3 text-left transition-all cursor-pointer',
-                !selectedTemplateId
-                  ? 'border-blue-600 bg-blue-50/40 ring-1 ring-blue-600'
-                  : 'border-slate-200 hover:border-slate-300'
+                "flex items-center gap-2.5 rounded-lg border p-3 text-left transition-all cursor-pointer",
+                !selectedTemplateId ?
+                  "border-blue-600 bg-blue-50/40 ring-1 ring-blue-600"
+                : "border-slate-200 hover:border-slate-300",
               )}
             >
               <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-white border border-slate-200 text-slate-700">
                 <Layers className="h-4 w-4" />
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-xs font-semibold text-slate-900">Blank Canvas</div>
-                <div className="text-[11px] text-slate-500 truncate">Start from an empty canvas</div>
+                <div className="text-xs font-semibold text-slate-900">
+                  Blank Canvas
+                </div>
+                <div className="text-[11px] text-slate-500 truncate">
+                  Start from an empty canvas
+                </div>
               </div>
             </div>
 
@@ -122,24 +136,26 @@ export function CreateJourneyDialog({
                   key={tmpl.id}
                   onClick={() => {
                     setSelectedTemplateId(tmpl.id);
-                    if (!title.trim()) {
-                      setTitle(`${tmpl.journey.title} Copy`);
-                      setDescription(tmpl.journey.description);
-                    }
+                    setTitle(`${tmpl.journey.title} Copy`);
+                    setDescription(tmpl.journey.description || "");
                   }}
                   className={cn(
-                    'flex items-center gap-2.5 rounded-lg border p-3 text-left transition-all cursor-pointer',
-                    isSelected
-                      ? 'border-blue-600 bg-blue-50/40 ring-1 ring-blue-600'
-                      : 'border-slate-200 hover:border-slate-300'
+                    "flex items-center gap-2.5 rounded-lg border p-3 text-left transition-all cursor-pointer",
+                    isSelected ?
+                      "border-blue-600 bg-blue-50/40 ring-1 ring-blue-600"
+                    : "border-slate-200 hover:border-slate-300",
                   )}
                 >
                   <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-white border border-slate-200 text-blue-600">
                     <Sparkles className="h-4 w-4" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="text-xs font-semibold text-slate-900 truncate">{tmpl.name}</div>
-                    <div className="text-[11px] text-slate-500 truncate">{tmpl.badge} Template</div>
+                    <div className="text-xs font-semibold text-slate-900 truncate">
+                      {tmpl.name}
+                    </div>
+                    <div className="text-[11px] text-slate-500 truncate">
+                      {tmpl.badge} Template
+                    </div>
                   </div>
                 </div>
               );
@@ -163,7 +179,7 @@ export function CreateJourneyDialog({
             disabled={!title.trim() || isSubmitting}
             className="cursor-pointer"
           >
-            {isSubmitting ? 'Creating...' : 'Create & Open Studio'}
+            {isSubmitting ? "Creating..." : "Create & Open Studio"}
           </Button>
         </DialogFooter>
       </form>

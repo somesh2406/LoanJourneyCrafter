@@ -1,41 +1,56 @@
-﻿import { MiniMap, type Node as FlowNode } from '@xyflow/react';
-import { X, MapPin } from 'lucide-react';
-import { useUIStore } from '@/stores/ui-store';
-import { EditorNode } from '@/domain/journey/mapper';
+import * as React from "react";
+import { MiniMap, type Node as FlowNode } from "@xyflow/react";
+import { X, MapPin } from "lucide-react";
+import { useUIStore } from "@/stores/ui-store";
+import { EditorNode } from "@/domain/journey/mapper";
 
 export function GlanceView() {
   const glanceOpen = useUIStore((s) => s.glanceOpen);
   const setGlanceOpen = useUIStore((s) => s.setGlanceOpen);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [dimensions, setDimensions] = React.useState({
+    width: 206,
+    height: 126,
+  });
+
+  React.useEffect(() => {
+    if (containerRef.current) {
+      const { clientWidth, clientHeight } = containerRef.current;
+      if (clientWidth > 0 && clientHeight > 0) {
+        setDimensions({ width: clientWidth, height: clientHeight });
+      }
+    }
+  }, [glanceOpen]);
 
   const nodeColor = (node: FlowNode) => {
     const editorNode = node as EditorNode;
     switch (editorNode.type) {
-      case 'stageNode':
-        return '#bfdbfe'; // blue-200
-      case 'activityNode':
-        return '#3b82f6'; // blue-500
-      case 'decisionNode':
-        return '#f59e0b'; // amber-500
-      case 'noteNode':
-        return '#fde68a'; // amber-200
+      case "stageNode":
+        return "#bfdbfe"; // blue-200
+      case "activityNode":
+        return "#3b82f6"; // blue-500
+      case "decisionNode":
+        return "#f59e0b"; // amber-500
+      case "noteNode":
+        return "#fde68a"; // amber-200
       default:
-        return '#cbd5e1';
+        return "#cbd5e1";
     }
   };
 
   const nodeStrokeColor = (node: FlowNode) => {
     const editorNode = node as EditorNode;
     switch (editorNode.type) {
-      case 'stageNode':
-        return '#2563eb';
-      case 'activityNode':
-        return '#1d4ed8';
-      case 'decisionNode':
-        return '#b45309';
-      case 'noteNode':
-        return '#d97706';
+      case "stageNode":
+        return "#2563eb";
+      case "activityNode":
+        return "#1d4ed8";
+      case "decisionNode":
+        return "#b45309";
+      case "noteNode":
+        return "#d97706";
       default:
-        return '#94a3b8';
+        return "#94a3b8";
     }
   };
 
@@ -73,22 +88,27 @@ export function GlanceView() {
       </div>
 
       {/* Synchronized XYFlow MiniMap */}
-      <div className="h-32 w-full overflow-hidden rounded-lg border border-slate-200 bg-slate-50 relative">
+      <div
+        ref={containerRef}
+        className="h-32 w-full overflow-hidden rounded-lg border border-slate-200 bg-slate-50 relative"
+      >
         <MiniMap
           nodeColor={nodeColor}
           nodeStrokeColor={nodeStrokeColor}
           nodeStrokeWidth={2}
           nodeBorderRadius={4}
           maskColor="rgba(241, 245, 249, 0.7)"
+          maskStrokeColor="#2563eb"
+          maskStrokeWidth={2}
           pannable
           zoomable
           style={{
-            position: 'relative',
-            width: '100%',
-            height: '100%',
+            position: "relative",
+            width: dimensions.width,
+            height: dimensions.height,
             margin: 0,
-            bottom: 'auto',
-            right: 'auto',
+            bottom: "auto",
+            right: "auto",
           }}
         />
       </div>

@@ -1,4 +1,4 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 import {
   type NodeChange,
   type EdgeChange,
@@ -7,20 +7,20 @@ import {
   applyEdgeChanges,
   addEdge as addFlowEdge,
   MarkerType,
-} from '@xyflow/react';
+} from "@xyflow/react";
 import {
   EditorNode,
   EditorEdge,
   EditorNodeData,
   journeyToEditorState,
   editorStateToJourney,
-} from '@/domain/journey/mapper';
-import { Journey, JourneyStatus } from '@/domain/journey/types';
-import { Condition } from '@/domain/nodes/types';
-import { getJourneyRepository } from '@/services/journey/repository-factory';
-import { calculateStageChildrenBounds } from '@/utils/geometry';
+} from "@/domain/journey/mapper";
+import { Journey, JourneyStatus } from "@/domain/journey/types";
+import { Condition } from "@/domain/nodes/types";
+import { getJourneyRepository } from "@/services/journey/repository-factory";
+import { calculateStageChildrenBounds } from "@/utils/geometry";
 
-export type SaveStatus = 'saved' | 'saving' | 'unsaved' | 'error';
+export type SaveStatus = "saved" | "saving" | "unsaved" | "error";
 
 interface HistorySnapshot {
   nodes: EditorNode[];
@@ -81,12 +81,17 @@ interface JourneyState {
   addNode: (node: EditorNode) => void;
   deleteNode: (nodeId: string) => void;
   deleteEdge: (edgeId: string) => void;
+  updateEdgeLabel: (edgeId: string, label: string) => void;
   updateNodeData: (nodeId: string, patch: Partial<EditorNodeData>) => void;
-  commitNodeDrag: (nodeId: string, position: { x: number; y: number }, parentId?: string | null) => void;
+  commitNodeDrag: (
+    nodeId: string,
+    position: { x: number; y: number },
+    parentId?: string | null,
+  ) => void;
   commitNodeResize: (
     nodeId: string,
     size: { width: number; height: number },
-    position?: { x: number; y: number }
+    position?: { x: number; y: number },
   ) => void;
   toggleStageCollapse: (stageId: string) => void;
   expandAllStages: () => void;
@@ -94,10 +99,14 @@ interface JourneyState {
   reparentActivity: (
     activityId: string,
     targetStageId: string | null,
-    newPosition: { x: number; y: number }
+    newPosition: { x: number; y: number },
   ) => void;
   addCondition: (decisionId: string, condition: Condition) => void;
-  updateCondition: (decisionId: string, conditionId: string, patch: Partial<Condition>) => void;
+  updateCondition: (
+    decisionId: string,
+    conditionId: string,
+    patch: Partial<Condition>,
+  ) => void;
   removeCondition: (decisionId: string, conditionId: string) => void;
 
   // Persistence
@@ -111,7 +120,7 @@ let autosaveTimer: ReturnType<typeof setTimeout> | null = null;
 export const useJourneyStore = create<JourneyState>((set, get) => {
   const triggerAutosave = () => {
     if (autosaveTimer) clearTimeout(autosaveTimer);
-    set({ saveStatus: 'unsaved' });
+    set({ saveStatus: "unsaved" });
     autosaveTimer = setTimeout(() => {
       get().saveJourney(false);
     }, 800);
@@ -129,15 +138,15 @@ export const useJourneyStore = create<JourneyState>((set, get) => {
   };
 
   return {
-    journeyId: '',
-    title: 'Untitled Journey',
-    description: '',
-    status: 'draft',
-    version: '1.0.0',
+    journeyId: "",
+    title: "Untitled Journey",
+    description: "",
+    status: "draft",
+    version: "1.0.0",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    createdBy: 'User',
-    updatedBy: 'User',
+    createdBy: "User",
+    updatedBy: "User",
     metadata: {},
     isPinned: false,
 
@@ -147,7 +156,7 @@ export const useJourneyStore = create<JourneyState>((set, get) => {
     selectedNodeId: null,
     selectedEdgeId: null,
 
-    saveStatus: 'saved',
+    saveStatus: "saved",
     lastSavedAt: null,
 
     past: [],
@@ -174,7 +183,7 @@ export const useJourneyStore = create<JourneyState>((set, get) => {
         edges,
         selectedNodeId: null,
         selectedEdgeId: null,
-        saveStatus: 'saved',
+        saveStatus: "saved",
         lastSavedAt: journey.updatedAt,
         past: [],
         future: [],
@@ -196,13 +205,18 @@ export const useJourneyStore = create<JourneyState>((set, get) => {
     },
 
     onConnect: (connection) => {
-      if (!connection.source || !connection.target || connection.source === connection.target) {
+      if (
+        !connection.source ||
+        !connection.target ||
+        connection.source === connection.target
+      ) {
         return;
       }
       get().pushSnapshot();
 
-      const conditionId = connection.sourceHandle?.startsWith('condition-')
-        ? connection.sourceHandle.replace('condition-', '')
+      const conditionId =
+        connection.sourceHandle?.startsWith("condition-") ?
+          connection.sourceHandle.replace("condition-", "")
         : null;
 
       const newEdge: EditorEdge = {
@@ -211,7 +225,7 @@ export const useJourneyStore = create<JourneyState>((set, get) => {
         target: connection.target,
         sourceHandle: connection.sourceHandle,
         targetHandle: connection.targetHandle,
-        type: 'journeyEdge',
+        type: "journeyEdge",
         data: {
           conditionId,
           label: null,
@@ -220,7 +234,7 @@ export const useJourneyStore = create<JourneyState>((set, get) => {
           type: MarkerType.ArrowClosed,
           width: 16,
           height: 16,
-          color: '#64748b',
+          color: "#64748b",
         },
       };
 
@@ -329,7 +343,7 @@ export const useJourneyStore = create<JourneyState>((set, get) => {
 
       // If this is a stage, also delete its child activities!
       const childActivityIds = new Set(
-        state.nodes.filter((n) => n.parentId === nodeId).map((n) => n.id)
+        state.nodes.filter((n) => n.parentId === nodeId).map((n) => n.id),
       );
       const allDeletedNodeIds = new Set([nodeId, ...childActivityIds]);
 
@@ -338,13 +352,15 @@ export const useJourneyStore = create<JourneyState>((set, get) => {
 
       // Remove all connected edges
       const nextEdges = state.edges.filter(
-        (e) => !allDeletedNodeIds.has(e.source) && !allDeletedNodeIds.has(e.target)
+        (e) =>
+          !allDeletedNodeIds.has(e.source) && !allDeletedNodeIds.has(e.target),
       );
 
       set({
         nodes: nextNodes,
         edges: nextEdges,
-        selectedNodeId: state.selectedNodeId === nodeId ? null : state.selectedNodeId,
+        selectedNodeId:
+          state.selectedNodeId === nodeId ? null : state.selectedNodeId,
       });
       triggerAutosave();
     },
@@ -353,7 +369,27 @@ export const useJourneyStore = create<JourneyState>((set, get) => {
       get().pushSnapshot();
       set({
         edges: get().edges.filter((e) => e.id !== edgeId),
-        selectedEdgeId: get().selectedEdgeId === edgeId ? null : get().selectedEdgeId,
+        selectedEdgeId:
+          get().selectedEdgeId === edgeId ? null : get().selectedEdgeId,
+      });
+      triggerAutosave();
+    },
+
+    updateEdgeLabel: (edgeId, label) => {
+      get().pushSnapshot();
+      set({
+        edges: get().edges.map((e) => {
+          if (e.id === edgeId) {
+            return {
+              ...e,
+              data: {
+                ...e.data,
+                label: label.trim() || null,
+              },
+            };
+          }
+          return e;
+        }),
       });
       triggerAutosave();
     },
@@ -397,7 +433,8 @@ export const useJourneyStore = create<JourneyState>((set, get) => {
             return {
               ...n,
               position: { ...position },
-              parentId: parentId !== undefined ? (parentId || undefined) : n.parentId,
+              parentId:
+                parentId !== undefined ? parentId || undefined : n.parentId,
             };
           }
           return n;
@@ -424,6 +461,13 @@ export const useJourneyStore = create<JourneyState>((set, get) => {
                 height: size.height,
               },
               position: position ? { ...position } : n.position,
+              data:
+                n.type === "stageNode" ?
+                  {
+                    ...n.data,
+                    expandedHeight: size.height,
+                  }
+                : n.data,
             };
           }
           return n;
@@ -437,16 +481,27 @@ export const useJourneyStore = create<JourneyState>((set, get) => {
       if (!stage) return;
 
       get().pushSnapshot();
-      const nextCollapsed = !(stage.data as { isCollapsed?: boolean }).isCollapsed;
+      const nextCollapsed = !(stage.data as { isCollapsed?: boolean })
+        .isCollapsed;
+      const originalHeight =
+        (stage.data as { expandedHeight?: number }).expandedHeight ||
+        (stage.height && stage.height > 56 ? stage.height : 280);
 
       set({
         nodes: get().nodes.map((n) => {
           if (n.id === stageId) {
+            const nextHeight = nextCollapsed ? 56 : originalHeight;
             return {
               ...n,
+              height: nextHeight,
+              style: {
+                ...n.style,
+                height: nextHeight,
+              },
               data: {
                 ...n.data,
                 isCollapsed: nextCollapsed,
+                expandedHeight: originalHeight,
               },
             };
           }
@@ -466,9 +521,17 @@ export const useJourneyStore = create<JourneyState>((set, get) => {
       get().pushSnapshot();
       set({
         nodes: get().nodes.map((n) => {
-          if (n.type === 'stageNode') {
+          if (n.type === "stageNode") {
+            const originalHeight =
+              (n.data as { expandedHeight?: number }).expandedHeight ||
+              (n.height && n.height > 56 ? n.height : 280);
             return {
               ...n,
+              height: originalHeight,
+              style: {
+                ...n.style,
+                height: originalHeight,
+              },
               data: { ...n.data, isCollapsed: false },
             };
           }
@@ -485,10 +548,22 @@ export const useJourneyStore = create<JourneyState>((set, get) => {
       get().pushSnapshot();
       set({
         nodes: get().nodes.map((n) => {
-          if (n.type === 'stageNode') {
+          if (n.type === "stageNode") {
+            const originalHeight =
+              (n.data as { expandedHeight?: number }).expandedHeight ||
+              (n.height && n.height > 56 ? n.height : 280);
             return {
               ...n,
-              data: { ...n.data, isCollapsed: true },
+              height: 56,
+              style: {
+                ...n.style,
+                height: 56,
+              },
+              data: {
+                ...n.data,
+                isCollapsed: true,
+                expandedHeight: originalHeight,
+              },
             };
           }
           if (n.parentId) {
@@ -507,7 +582,8 @@ export const useJourneyStore = create<JourneyState>((set, get) => {
 
       get().pushSnapshot();
 
-      let targetStage = targetStageId ? state.nodes.find((n) => n.id === targetStageId) : null;
+      let targetStage =
+        targetStageId ? state.nodes.find((n) => n.id === targetStageId) : null;
 
       // If targetStage exists, ensure its dimensions contain the new child
       let updatedTargetStageWidth = targetStage?.width;
@@ -515,7 +591,7 @@ export const useJourneyStore = create<JourneyState>((set, get) => {
 
       if (targetStage) {
         const existingChildren = state.nodes.filter(
-          (n) => n.parentId === targetStageId && n.id !== activityId
+          (n) => n.parentId === targetStageId && n.id !== activityId,
         );
         const childW = activity.width || 220;
         const childH = activity.height || 76;
@@ -539,10 +615,17 @@ export const useJourneyStore = create<JourneyState>((set, get) => {
               ...n,
               parentId: targetStageId || undefined,
               position: { ...newPosition },
-              hidden: targetStage ? !!(targetStage.data as { isCollapsed?: boolean }).isCollapsed : false,
+              hidden:
+                targetStage ?
+                  !!(targetStage.data as { isCollapsed?: boolean }).isCollapsed
+                : false,
             };
           }
-          if (targetStageId && n.id === targetStageId && (updatedTargetStageWidth || updatedTargetStageHeight)) {
+          if (
+            targetStageId &&
+            n.id === targetStageId &&
+            (updatedTargetStageWidth || updatedTargetStageHeight)
+          ) {
             return {
               ...n,
               width: updatedTargetStageWidth ?? n.width,
@@ -565,7 +648,8 @@ export const useJourneyStore = create<JourneyState>((set, get) => {
       if (!decision) return;
 
       get().pushSnapshot();
-      const existingConditions = ((decision.data.conditions as Condition[]) || []);
+      const existingConditions =
+        (decision.data.conditions as Condition[]) || [];
 
       set({
         nodes: get().nodes.map((n) => {
@@ -589,8 +673,8 @@ export const useJourneyStore = create<JourneyState>((set, get) => {
       if (!decision) return;
 
       get().pushSnapshot();
-      const conditions = ((decision.data.conditions as Condition[]) || []).map((c) =>
-        c.id === conditionId ? { ...c, ...patch } : c
+      const conditions = ((decision.data.conditions as Condition[]) || []).map(
+        (c) => (c.id === conditionId ? { ...c, ...patch } : c),
       );
 
       set({
@@ -612,14 +696,19 @@ export const useJourneyStore = create<JourneyState>((set, get) => {
       if (!decision) return;
 
       get().pushSnapshot();
-      const conditions = ((decision.data.conditions as Condition[]) || []).filter(
-        (c) => c.id !== conditionId
-      );
+      const conditions = (
+        (decision.data.conditions as Condition[]) || []
+      ).filter((c) => c.id !== conditionId);
 
       // Also remove any edges originating from this condition handle!
       const conditionHandleId = `condition-${conditionId}`;
       const edges = get().edges.filter(
-        (e) => !(e.source === decisionId && (e.sourceHandle === conditionHandleId || e.data?.conditionId === conditionId))
+        (e) =>
+          !(
+            e.source === decisionId &&
+            (e.sourceHandle === conditionHandleId ||
+              e.data?.conditionId === conditionId)
+          ),
       );
 
       set({
@@ -642,11 +731,11 @@ export const useJourneyStore = create<JourneyState>((set, get) => {
       if (!s.journeyId) return;
 
       try {
-        set({ saveStatus: 'saving' });
+        set({ saveStatus: "saving" });
         const repo = getJourneyRepository();
         const existing = await repo.get(s.journeyId);
         if (!existing) {
-          throw new Error('Journey not found in repository');
+          throw new Error("Journey not found in repository");
         }
 
         const domainJourney = editorStateToJourney(s.nodes, s.edges, {
@@ -676,13 +765,13 @@ export const useJourneyStore = create<JourneyState>((set, get) => {
 
         const now = new Date().toISOString();
         set({
-          saveStatus: 'saved',
+          saveStatus: "saved",
           lastSavedAt: now,
           updatedAt: now,
         });
       } catch (err) {
-        console.error('Failed to save journey:', err);
-        set({ saveStatus: 'error' });
+        console.error("Failed to save journey:", err);
+        set({ saveStatus: "error" });
       }
     },
 

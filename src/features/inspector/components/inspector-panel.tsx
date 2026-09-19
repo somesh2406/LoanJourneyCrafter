@@ -1,4 +1,4 @@
-﻿import { ChevronRight, Sliders, X } from "lucide-react";
+import { ChevronRight, Sliders, X } from "lucide-react";
 import { useJourneyStore } from "@/stores/journey-store";
 import { useUIStore } from "@/stores/ui-store";
 import { EmptyInspector } from "./empty-inspector";
@@ -6,6 +6,7 @@ import { StageInspector } from "./stage-inspector";
 import { ActivityInspector } from "./activity-inspector";
 import { DecisionInspector } from "./decision-inspector";
 import { NoteInspector } from "./note-inspector";
+import { ConnectorInspector } from "./connector-inspector";
 
 export function InspectorPanel() {
   const inspectorOpen = useUIStore((s) => s.inspectorOpen);
@@ -13,10 +14,15 @@ export function InspectorPanel() {
 
   const selectedNodeId = useJourneyStore((s) => s.selectedNodeId);
   const selectNode = useJourneyStore((s) => s.selectNode);
+  const selectedEdgeId = useJourneyStore((s) => s.selectedEdgeId);
+  const selectEdge = useJourneyStore((s) => s.selectEdge);
   const nodes = useJourneyStore((s) => s.nodes);
+  const edges = useJourneyStore((s) => s.edges);
 
   const selectedNode =
     selectedNodeId ? nodes.find((n) => n.id === selectedNodeId) : null;
+  const selectedEdge =
+    selectedEdgeId ? edges.find((e) => e.id === selectedEdgeId) : null;
 
   if (!inspectorOpen) {
     return (
@@ -36,38 +42,49 @@ export function InspectorPanel() {
   }
 
   const renderContent = () => {
-    if (!selectedNode) {
-      return <EmptyInspector />;
+    if (selectedNode) {
+      switch (selectedNode.type) {
+        case "stageNode":
+          return <StageInspector node={selectedNode} />;
+        case "activityNode":
+          return <ActivityInspector node={selectedNode} />;
+        case "decisionNode":
+          return <DecisionInspector node={selectedNode} />;
+        case "noteNode":
+          return <NoteInspector node={selectedNode} />;
+        default:
+          return <EmptyInspector />;
+      }
     }
 
-    switch (selectedNode.type) {
-      case "stageNode":
-        return <StageInspector node={selectedNode} />;
-      case "activityNode":
-        return <ActivityInspector node={selectedNode} />;
-      case "decisionNode":
-        return <DecisionInspector node={selectedNode} />;
-      case "noteNode":
-        return <NoteInspector node={selectedNode} />;
-      default:
-        return <EmptyInspector />;
+    if (selectedEdge) {
+      return <ConnectorInspector edge={selectedEdge} />;
     }
+
+    return <EmptyInspector />;
   };
 
   const getHeaderTitle = () => {
-    if (!selectedNode) return "Properties";
-    switch (selectedNode.type) {
-      case "stageNode":
-        return "Stage Inspector";
-      case "activityNode":
-        return "Activity Inspector";
-      case "decisionNode":
-        return "Decision Inspector";
-      case "noteNode":
-        return "Note Inspector";
-      default:
-        return "Inspector";
+    if (selectedNode) {
+      switch (selectedNode.type) {
+        case "stageNode":
+          return "Stage Inspector";
+        case "activityNode":
+          return "Activity Inspector";
+        case "decisionNode":
+          return "Decision Inspector";
+        case "noteNode":
+          return "Note Inspector";
+        default:
+          return "Inspector";
+      }
     }
+
+    if (selectedEdge) {
+      return "Connector Inspector";
+    }
+
+    return "Properties";
   };
 
   return (
@@ -82,10 +99,13 @@ export function InspectorPanel() {
         </div>
 
         <div className="flex items-center gap-1">
-          {selectedNode && (
+          {(selectedNode || selectedEdge) && (
             <button
               type="button"
-              onClick={() => selectNode(null)}
+              onClick={() => {
+                selectNode(null);
+                selectEdge(null);
+              }}
               className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors cursor-pointer"
               title="Clear selection"
               aria-label="Clear selection"
