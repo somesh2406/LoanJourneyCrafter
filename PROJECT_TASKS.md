@@ -86,6 +86,15 @@ This document serves as the living task board and roadmap for **Loan Journey Cra
 - [x] **Fix 2: Canvas Connector (Arrow) Name Modification**:
   - **Issue**: Connectors could be created, but users had no way to modify or give names to connector arrows.
   - **Resolution**: Added `updateEdgeLabel` store action; added inline editing (double-click or pencil icon) and `+ Add Name` button on `JourneyEdge`; created `ConnectorInspector` in the inspector panel for full property editing. Preserved 100% of the existing arrow connector design.
+- [x] **Fix 3: GlanceView MiniMap Canvas Rendering**:
+  - **Issue**: MiniMap inside GlanceView was not rendering the canvas view due to string width/height (`'100%'`) producing `NaN` in SVG `viewBox`.
+  - **Resolution**: Replaced string dimensions with concrete numeric dimensions (`width={dimensions.width}` and `height={dimensions.height}`) from a container ref (`206px x 126px`), and added `maskStrokeColor="#2563eb"` with `maskStrokeWidth={2}` for clear viewport synchronization.
+- [x] **Fix 4: Stage Plus / Options Menu Stacking Context (Portal)**:
+  - **Issue**: The dropdown menu inside `StageNode` opened underneath child activity components due to React Flow DOM node stacking contexts.
+  - **Resolution**: Added `usePortal={true}` to `DropdownMenu` using `createPortal` to `document.body` with fixed positioning (`zIndex: 9999`). The menu opens at the exact same location, but renders on top of all child activities. Updated trigger button to Plus icon.
+- [x] **Fix 5: Connector Repositioning on Stage Collapse & Expand**:
+  - **Issue**: When stages collapsed, connector arrows remained floating at the old 280px midpoint because `node.height` was not updated in the store and handle positions were not recalculated.
+  - **Resolution**: Updated `toggleStageCollapse`, `collapseAllStages`, and `expandAllStages` in `useJourneyStore` to sync `height: 56` and track `expandedHeight`. In `StageNode`, called `useUpdateNodeInternals` so React Flow recalculates handle positions (`left`/`right` at `y = 28px`), properly moving connector arrows.
 
 ### Documentation Suite
 
@@ -94,7 +103,7 @@ This document serves as the living task board and roadmap for **Loan Journey Cra
 - [x] `DEVELOPMENT_RULES.md`: Code style, state mutation protocols, vibe-coding discipline, and verification rules.
 - [x] `DESIGN_SYSTEM.md`: Color tokens, typography, component primitives, and canvas node/edge visual specs.
 - [x] `PROJECT_TASKS.md`: Living task backlog, completed epics, and future roadmap.
-- [ ] `PROJECT_MEMORY.md`: Institutional knowledge, architectural decisions, and edge case resolutions.
+- [x] `PROJECT_MEMORY.md`: Institutional knowledge, architectural decisions, and edge case resolutions.
 
 ---
 

@@ -92,6 +92,24 @@ This document preserves the institutional knowledge, engineering rationale, arch
   3. Added `ConnectorInspector` in the right inspector panel for full property editing when an edge is clicked.
   4. Preserved 100% of the existing arrow connector design (bezier path, markers, and styling).
 
+### Edge Case 5: MiniMap String Dimensions Causing NaN in SVG viewBox
+
+- **Problem**: In `GlanceView`, passing `style={{ width: '100%', height: '100%' }}` to `@xyflow/react`'s `<MiniMap>` caused the internal calculation `boundingRect.width / style.width` to evaluate to `NaN` in JavaScript. This resulted in an invalid SVG `viewBox="NaN NaN NaN NaN"`, preventing the canvas overview from rendering.
+- **Solution**: Measured the container element dynamically using a ref and supplied concrete numeric dimensions (`width={dimensions.width}` and `height={dimensions.height}`), along with `maskStrokeColor="#2563eb"` and `maskStrokeWidth={2}` so the active viewport mask is clearly visible and synchronized.
+
+### Edge Case 6: React Flow Stacking Context & Dropdown Menus Inside Nodes
+
+- **Problem**: In React Flow, child activities (`activityNode`) render after parent stages (`stageNode`) in the DOM and have a higher stacking order. A dropdown menu rendered directly inside `StageNode` was trapped inside the parent's lower stacking context, rendering underneath the child activities.
+- **Solution**: Implemented `usePortal={true}` support in `DropdownMenu`. The trigger's screen position is measured via `getBoundingClientRect()`, and the menu is portaled directly into `document.body` with `position: fixed` and `zIndex: 9999`. It opens at the exact same location as before, but renders on top of all child activities.
+
+### Edge Case 7: Node Dimensions & Handle Recalculation on Collapse / Expand
+
+- **Problem**: Collapsing a stage visually shrank it to 56px, but `node.height` remained 280px in React Flow's store. React Flow cached handle positions based on 280px (`y = 140px`). Consequently, connector arrows remained floating at the old 280px midpoint instead of moving to the collapsed stage.
+- **Solution**:
+  1. In `useJourneyStore`, `toggleStageCollapse`, `collapseAllStages`, and `expandAllStages` were updated to set `height: 56` (saving `expandedHeight`) when collapsed, and restore `height: expandedHeight` when expanded.
+  2. In `StageNode`, `useUpdateNodeInternals(id)` is called on collapse/expand so React Flow recalculates handle positions (`left` and `right` snap to `y = 28px`), properly repositioning all connected arrows.
+  3. In `mapper.ts`, `expandedHeight` is preserved during domain serialization so saved/loaded collapsed stages maintain their expanded dimensions.
+
 ---
 
 ## 3. Practical Guidance for Future Agents & Developers
