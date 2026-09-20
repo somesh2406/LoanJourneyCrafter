@@ -63,6 +63,35 @@ This document preserves the institutional knowledge, engineering rationale, arch
 
 ---
 
+### ADR-006: Native React Flow & Indented Markdown Engine for MindMaps
+
+- **Context**: The user requested a KeenEthics-inspired MindMap Studio (`https://mindmap-app.keenethics-labs.com/share/9k00sw93`) to build ideation trees, domain decompositions, and microservices maps alongside loan journeys.
+- **Decision**:
+  1. Build the MindMap studio natively using `@xyflow/react` custom nodes (`MindmapNode`) and custom edges (`MindmapEdge`) rather than introducing heavy third-party mindmap packages (Mind-Elixir, jsMind, Simple-Mind-Map).
+  2. Store mindmap structures as pure domain items (`MindmapNodeItem`) with a pure TypeScript layout engine (`tree-layout.ts`).
+  3. Support bidirectional Markdown conversion matching the KeenEthics indented Markdown tree format (`# Root \n  - Branch \n    - Sub-branch`).
+- **Rationale**:
+  1. Reuses the already-installed `@xyflow/react` v12 and Zustand v5 without adding any new runtime bundle overhead.
+  2. Ensures unified look-and-feel, Tailwind CSS v4 styling, and consistent keyboard workflows.
+  3. Indented markdown allows users to import/export and edit mindmaps directly in plain text.
+
+---
+
+### ADR-007: Rich Markdown (Tables, Formulas, Code Blocks) in MindMap Nodes
+
+- **Context**: Users required financial formulas (EMI, DTI, LTV), rate/risk pricing tables, and API JSON code blocks inside mindmap nodes to model lending domain architectures accurately.
+- **Decision**:
+  1. Add `content?: string` and `contentType?: 'text' | 'formula' | 'code' | 'table' | 'mixed'` to `MindmapNodeItem`.
+  2. Enhance `markdownToMindmap` to capture code fences (` ``` `), tables (`| ... |`), and formulas (`$$...$$`) into the active node's `content` property rather than splitting them into separate tree nodes.
+  3. Build `RichContentRenderer` to render tables with monospace cells, code blocks with copy-to-clipboard buttons, and formulas with mathematical typography.
+  4. Dynamically expand node dimensions in `tree-layout.ts` based on `contentType` to prevent any vertical branch collision.
+- **Rationale**:
+  1. Keeps simple nodes sleek, fast, and compact (190-240px wide).
+  2. Expands rich nodes naturally (280-360px wide) without breaking horizontal tree layout symmetry or overlapping siblings.
+  3. Preserves plain text Markdown interoperability with zero loss of formatting.
+
+---
+
 ## 2. Key Edge Cases Handled & Lessons Learned
 
 ### Edge Case 1: Stage Geometry Overflow & Dynamic Bounds
@@ -109,6 +138,19 @@ This document preserves the institutional knowledge, engineering rationale, arch
   1. In `useJourneyStore`, `toggleStageCollapse`, `collapseAllStages`, and `expandAllStages` were updated to set `height: 56` (saving `expandedHeight`) when collapsed, and restore `height: expandedHeight` when expanded.
   2. In `StageNode`, `useUpdateNodeInternals(id)` is called on collapse/expand so React Flow recalculates handle positions (`left` and `right` snap to `y = 28px`), properly repositioning all connected arrows.
   3. In `mapper.ts`, `expandedHeight` is preserved during domain serialization so saved/loaded collapsed stages maintain their expanded dimensions.
+
+### Edge Case 8: Dynamic Subtree Bounding in MindMap Tree Layout
+
+- **Problem**: In mindmaps with variable numbers of children and sub-branches, naive static vertical offsets cause overlapping branches when subtrees grow deep.
+- **Solution**: The `computeMindmapLayout` algorithm in `tree-layout.ts` performs a two-pass calculation:
+  1. **Bottom-up pass**: Computes `subtreeHeight = Math.max(node.height + Y_GAP, sum(child.subtreeHeight))` for each visible node.
+  2. **Top-down pass**: Centers each node vertically relative to its children's bounding box and positions siblings sequentially without vertical collision.
+  3. **Color inheritance**: Propagates the root branch's palette color to all descendant nodes and edges.
+
+### Edge Case 9: Multi-line Markdown Parsing for Block Elements in Tree Structures
+
+- **Problem**: In standard indented Markdown parsers, every line starting with a special character or indentation could be mistakenly identified as a new tree branch node, breaking Markdown tables (`| ... |`), code blocks (` ```...``` `), and formulas (`$$...$$`).
+- **Solution**: `markdownToMindmap` implements stateful tracking for `inCodeBlock` and `inFormulaBlock`, as well as table row lookaheads (`|...|`). Lines within these blocks are accumulated and flushed directly to `activeNode.content`, correctly associating rich body content with its parent branch without polluting the tree hierarchy.
 
 ---
 

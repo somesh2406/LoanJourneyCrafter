@@ -74,6 +74,48 @@ This document serves as the living task board and roadmap for **Loan Journey Cra
 - [x] Implement 800ms debounced autosave saving to `LocalStorageJourneyRepository`.
 - [x] Keyboard shortcuts (`Ctrl+S`, `Ctrl+Z`, `Ctrl+Y`, `Delete`, `Backspace`, `Escape`, `F`).
 
+### Epic 8: MindMap Studio & Architecture Trees
+
+- [x] Implement **MindMap Domain & Storage Layer**:
+  - `Mindmap`, `MindmapNodeItem`, `MindmapSummary` data models with branch color palettes (`blue`, `emerald`, `amber`, `purple`, `rose`, `cyan`, `indigo`).
+  - Bidirectional indented Markdown parser/serializer compatible with KeenEthics format (`# Root \n  - Branch \n    - Sub-branch`).
+  - `MindmapRepository` interface and `LocalMindmapRepository` seeded with enterprise _Loan Management System – Microservices Architecture_ mindmap.
+- [x] Implement **Tree Layout Engine (`tree-layout.ts`)**:
+  - Pure TypeScript horizontal left-to-right tree layout with subtree bounding calculation and collision-free vertical distribution.
+  - Branch color inheritance from level-1 roots down through all sub-branches.
+- [x] Implement **Zustand Mindmap Store (`mindmap-store.ts`)**:
+  - Tree node lifecycle: `addChildNode`, `addSiblingNode`, `updateNodeLabel`, `deleteNode` (subtree cascade), `toggleCollapse`, `expandAll`, `collapseAll`.
+  - Debounced autosave (600ms) with `saved`, `saving`, `unsaved`, `error` status indicator.
+  - Snapshot undo/redo history (`past`/`future`).
+  - Markdown import and export actions.
+- [x] Implement **MindMap Canvas Components**:
+  - `MindmapNode`: Root styling vs branch cards, inline text editing, `+` child button, subtree collapse badge with child count pill (`+N`).
+  - `MindmapEdge`: Organic curved bezier paths (`curvature: 0.35`) with branch stroke color inheritance.
+  - `MindmapNavbar`: Editable title, save indicator, child/sibling quick buttons, expand/collapse all, undo/redo, Markdown dialog with download/apply, and keyboard cheat sheet.
+  - `MindmapLayout` & `MindmapPage`: React Flow canvas with keyboard navigation (`Tab` for child, `Enter` for sibling, `Space` to edit, `Delete`/`Backspace` for node, `Escape` to blur).
+  - Registered `/mindmaps/$mindmapId` in TanStack Router.
+- [x] Implement **Modal & Library Home Page Integration**:
+  - Updated `CreateJourneyDialog`: Kept **Blank Canvas**, removed industry templates from modal, added **Blank MindMap**.
+  - Created `MindmapCard` with branch/node metrics, pin/unpin, delete, and open actions.
+  - Updated `LibraryPage`: Added dedicated **MindMaps & Architecture Trees** section with pinned mindmaps displayed first.
+
+### Epic 9: Rich Markdown Support in MindMap Studio (Tables, Formulas, Code Blocks)
+
+- [x] Implement **Rich Content Parsing in Domain Layer (`types.ts`)**:
+  - Added `content` and `contentType` (`'text' | 'formula' | 'code' | 'table' | 'mixed'`) to `MindmapNodeItem`.
+  - Enhanced `markdownToMindmap` to intelligently capture code blocks (` ``` `), tables (`| ... |`), and formulas (`$$...$$`) into node bodies rather than breaking them into individual tree nodes.
+  - Enhanced `mindmapToMarkdown` to preserve indented multi-line content beneath node headers.
+- [x] Implement **Dynamic Node Sizing in Layout Engine (`tree-layout.ts`)**:
+  - Enhanced `getNodeDimensions` to allocate larger width/height for tables (360px), code blocks (320px), and formulas (280px) to prevent branch overlaps.
+- [x] Implement **Rich Content Renderer Component (`rich-content-renderer.tsx`)**:
+  - Mini-table renderer with styled headers, alternating rows, and clipboard copy.
+  - Dark monospace code block renderer with language badge and copy button.
+  - Mathematical formula renderer with serif/italic math styling and copy action.
+- [x] Integrate **Rich Content into Canvas Node (`mindmap-node.tsx`)**:
+  - Preserved sleek compact single-line styling for simple nodes while cleanly expanding nodes that contain rich markdown bodies.
+- [x] Add **Built-in Rich Showcase Mindmap (`local-mindmap-repository.ts`)**:
+  - Pre-seeded _Loan Journey Underwriting & Calculation Matrix_ with EMI/DTI formulas, credit score rate tables, and bureau JSON payloads.
+
 ---
 
 ## 3. Current Sprint: Targeted Fixes & Documentation

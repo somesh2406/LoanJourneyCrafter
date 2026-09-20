@@ -205,3 +205,71 @@ export interface JourneyRepository {
 - **`LocalStorageJourneyRepository`**: Uses `localStorage` with seed initialization from `src/data/templates`. Implements automatic JSON parsing, fallback error handling, and mock latency simulation for realistic UI testing.
 - **`ApiJourneyRepository`**: Drop-in implementation ready for connecting to enterprise backend services via `fetch`/`axios`.
 - **`repository-factory.ts`**: Provides a single dependency injection point (`getJourneyRepository()`). Switching persistence across the entire app requires changing only one environment variable or factory return.
+
+---
+
+## 9. MindMap Studio Architecture
+
+The MindMap Studio (`/mindmaps/:mindmapId`) is a dedicated visual ideation and system architecture workspace built natively on top of `@xyflow/react` and Zustand.
+
+### 9.1 MindMap Domain Models (`src/domain/mindmap/types.ts`)
+
+- **`MindmapNodeItem`**:
+
+  ```ts
+  export type MindmapContentType =
+    | "text"
+    | "formula"
+    | "code"
+    | "table"
+    | "mixed";
+
+  export interface MindmapNodeItem {
+    id: string;
+    label: string;
+    parentId: string | null;
+    isRoot?: boolean;
+    collapsed?: boolean;
+    color?: string;
+    depth: number;
+    order: number;
+    content?: string; // Rich markdown body (code blocks, formulas, tables, descriptions)
+    contentType?: MindmapContentType;
+  }
+  ```
+
+- **`Mindmap`**: Entity containing `id`, `title`, `description`, `rootId`, `nodes: MindmapNodeItem[]`, `createdAt`, `updatedAt`, `isPinned`.
+- **`MindmapSummary`**: Summary record for library listings with `nodeCount` and `branchCount`.
+
+### 9.2 Tree Layout Engine (`src/features/mindmap/utils/tree-layout.ts`)
+
+- Pure TypeScript layout algorithm computing deterministic coordinates:
+  - **Dynamic Node Sizing**: Automatically allocates width and height based on node content type:
+    - Tables: `width: 360px`, `height: 52 + min(rows * 26, 200)px`
+    - Code Blocks: `width: 320px`, `height: 52 + min(lines * 20, 180)px`
+    - Formulas: `width: 280px`, `height: 95px`
+    - Standard Labels: `width: 190-240px`, `height: 42-56px`
+  - **Subtree Bounding**: Recursively calculates `subtreeHeight` bottom-up to guarantee zero vertical overlap among branches.
+  - **Horizontal Sprouting**: Roots at `(0, 0)`; Level-1 branches placed at `X_GAP = 85px`; sub-branches spaced proportionally.
+  - **Color Inheritance**: 7 corporate palettes (`blue`, `emerald`, `amber`, `purple`, `rose`, `cyan`, `indigo`). Children automatically inherit their parent branch's color.
+  - **Collapse Filtering**: When a branch is collapsed, descendant nodes are omitted from the flow graph, and the parent node displays a count badge (`+N`).
+
+### 9.3 Bidirectional Markdown Serialization & Rich Content Parser
+
+- **`markdownToMindmap`**: Parses indented markdown lines into tree nodes while intelligently capturing block-level rich elements:
+  - Fenced code blocks (` ```...``` `) are preserved intact with language detection.
+  - Markdown tables (`| ... |`) are accumulated and attached to the parent node.
+  - Block mathematical formulas (`$$...$$`) are associated with the active node.
+- **`mindmapToMarkdown`**: Serializes the mindmap hierarchy to indented markdown matching the KeenEthics format, preserving indented content blocks beneath each node.
+
+### 9.4 Rich Content Rendering (`RichContentRenderer`)
+
+- Located in `src/features/mindmap/components/rich-content-renderer.tsx`:
+  - **Table Renderer**: Compact table with styled headers, alternating rows, monospace font, and one-click copy.
+  - **Code Renderer**: Dark syntax card with language badge, emerald syntax text, and copy-to-clipboard button.
+  - **Formula Renderer**: Math formula card with serif italic typography and copy action.
+
+### 9.5 State Store & Repository
+
+- **`useMindmapStore`**: Manages active mindmap state, flow nodes/edges, inline editing, tree manipulations (`addChildNode`, `addSiblingNode`, `deleteNode`, `toggleCollapse`, `expandAll`, `collapseAll`), 20-step snapshot undo/redo, and 600ms debounced autosave.
+- **`LocalMindmapRepository`**: Persistent storage with index-based localStorage management and dual seeding of the _Loan Management System – Microservices Architecture_ and _Loan Journey Underwriting & Calculation Matrix_ showcase mindmaps.

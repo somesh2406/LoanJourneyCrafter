@@ -1,17 +1,30 @@
 import * as React from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { Pin, Clock, LayoutTemplate, Plus, Search } from "lucide-react";
+import {
+  Pin,
+  Clock,
+  LayoutTemplate,
+  Plus,
+  Search,
+  GitFork,
+} from "lucide-react";
 import {
   JourneySummary,
   JourneyTemplate,
   Journey,
 } from "@/domain/journey/types";
+import { MindmapSummary } from "@/domain/mindmap/types";
 import { getJourneyRepository } from "@/services/journey/repository-factory";
+import { getMindmapRepository } from "@/services/mindmap/repository-factory";
 import { LibraryNavbar } from "../components/library-navbar";
 import { HeroBanner } from "../components/hero-banner";
 import { JourneyCard } from "../components/journey-card";
+import { MindmapCard } from "../components/mindmap-card";
 import { TemplateCard } from "../components/template-card";
-import { CreateJourneyDialog } from "../components/create-journey-dialog";
+import {
+  CreateJourneyDialog,
+  CreationType,
+} from "../components/create-journey-dialog";
 import { ImportJourneyDialog } from "../components/import-journey-dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -19,9 +32,11 @@ import { Button } from "@/components/ui/button";
 export function LibraryPage() {
   const navigate = useNavigate();
   const repo = React.useMemo(() => getJourneyRepository(), []);
+  const mindmapRepo = React.useMemo(() => getMindmapRepository(), []);
 
   const [journeys, setJourneys] = React.useState<JourneySummary[]>([]);
   const [templates, setTemplates] = React.useState<JourneyTemplate[]>([]);
+  const [mindmaps, setMindmaps] = React.useState<MindmapSummary[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [searchQuery, setSearchQuery] = React.useState("");
 
@@ -33,18 +48,20 @@ export function LibraryPage() {
   const loadData = React.useCallback(async () => {
     try {
       setLoading(true);
-      const [allJourneys, allTemplates] = await Promise.all([
+      const [allJourneys, allTemplates, allMindmaps] = await Promise.all([
         repo.list(),
         repo.listTemplates(),
+        mindmapRepo.list(),
       ]);
       setJourneys(allJourneys);
       setTemplates(allTemplates);
+      setMindmaps(allMindmaps);
     } catch (e) {
-      console.error("Failed to load journeys:", e);
+      console.error("Failed to load data:", e);
     } finally {
       setLoading(false);
     }
-  }, [repo]);
+  }, [repo, mindmapRepo]);
 
   React.useEffect(() => {
     loadData();
@@ -54,8 +71,17 @@ export function LibraryPage() {
     navigate({ to: "/journeys/$journeyId", params: { journeyId: id } });
   };
 
+  const handleOpenMindmap = (id: string) => {
+    navigate({ to: "/mindmaps/$mindmapId", params: { mindmapId: id } });
+  };
+
   const handleTogglePin = async (id: string) => {
     await repo.togglePin(id);
+    await loadData();
+  };
+
+  const handleTogglePinMindmap = async (id: string) => {
+    await mindmapRepo.togglePin(id);
     await loadData();
   };
 
@@ -70,13 +96,39 @@ export function LibraryPage() {
     }
   };
 
+  const handleDeleteMindmap = async (id: string) => {
+    if (
+      window.confirm(
+        "Are you sure you want to delete this mindmap? This action cannot be undone.",
+      )
+    ) {
+      await mindmapRepo.delete(id);
+      await loadData();
+    }
+  };
+
   const handleCreateJourney = async (data: {
     title: string;
     description: string;
+    type: CreationType;
     templateId?: string;
   }) => {
-    const created = await repo.create(data);
-    navigate({ to: "/journeys/$journeyId", params: { journeyId: created.id } });
+    if (data.type === "mindmap") {
+      const created = await mindmapRepo.create({
+        title: data.title,
+        description: data.description,
+      });
+      navigate({
+        to: "/mindmaps/$mindmapId",
+        params: { mindmapId: created.id },
+      });
+    } else {
+      const created = await repo.create(data);
+      navigate({
+        to: "/journeys/$journeyId",
+        params: { journeyId: created.id },
+      });
+    }
   };
 
   const handleUseTemplate = (templateId: string) => {
@@ -119,6 +171,12 @@ export function LibraryPage() {
       j.description.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
+  const filteredMindmaps = mindmaps.filter(
+    (m) =>
+      m.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      m.description.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
+
   const pinnedJourneys = filteredJourneys.filter((j) => j.isPinned);
   const recentJourneys = filteredJourneys;
 
@@ -144,11 +202,12 @@ export function LibraryPage() {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-slate-200 pb-6">
           <div>
             <h2 className="text-xl font-bold text-slate-900">
-              Journey Repositories
+              Journey & MindMap Repositories
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
-              {journeys.length} total{" "}
-              {journeys.length === 1 ? "journey" : "journeys"} in local
+              {journeys.length} {journeys.length === 1 ? "journey" : "journeys"}{" "}
+              · {mindmaps.length}{" "}
+              {mindmaps.length === 1 ? "mindmap" : "mindmaps"} in local
               repository
             </p>
           </div>
@@ -156,7 +215,7 @@ export function LibraryPage() {
           <div className="relative w-full sm:w-72">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
             <Input
-              placeholder="Filter journeys by keyword..."
+              placeholder="Filter journeys & mindmaps..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 h-9 text-xs"
@@ -254,7 +313,74 @@ export function LibraryPage() {
           }
         </section>
 
-        {/* Section 3: Templates */}
+        {/* Section 3: MindMaps Section */}
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <div className="flex h-6 w-6 items-center justify-center rounded-md bg-indigo-100 text-indigo-700">
+                <GitFork className="h-3.5 w-3.5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold uppercase tracking-wider text-slate-800">
+                  MindMaps & Architecture Trees
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Visual ideation trees, domain decompositions, and
+                  microservices maps
+                </p>
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setSelectedTemplateForCreate(undefined);
+                setCreateDialogOpen(true);
+              }}
+              className="text-xs text-indigo-600 hover:text-indigo-700 cursor-pointer"
+            >
+              <Plus className="h-3.5 w-3.5 mr-1" />
+              New MindMap
+            </Button>
+          </div>
+
+          {loading ?
+            <div className="flex h-32 items-center justify-center text-xs text-slate-400">
+              Loading mindmaps...
+            </div>
+          : filteredMindmaps.length === 0 ?
+            <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center">
+              <p className="text-sm font-medium text-slate-600">
+                No mindmaps found
+              </p>
+              <p className="mt-1 text-xs text-slate-400">
+                Create a mindmap to start brainstorming microservices, journeys,
+                or workflows.
+              </p>
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => setCreateDialogOpen(true)}
+                className="mt-4 text-xs bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer"
+              >
+                Create MindMap
+              </Button>
+            </div>
+          : <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {filteredMindmaps.map((m) => (
+                <MindmapCard
+                  key={m.id}
+                  mindmap={m}
+                  onOpen={handleOpenMindmap}
+                  onTogglePin={handleTogglePinMindmap}
+                  onDelete={handleDeleteMindmap}
+                />
+              ))}
+            </div>
+          }
+        </section>
+
+        {/* Section 4: Templates */}
         <section className="pt-4">
           <div className="flex items-center gap-2 mb-4">
             <div className="flex h-6 w-6 items-center justify-center rounded-md bg-emerald-100 text-emerald-700">

@@ -127,6 +127,35 @@ Every loan journey transitions through four formal lifecycle states:
 - **Debounced Autosave**: Automatic background persistence (800ms debounce) to local storage or API backend whenever changes occur.
 - **Undo / Redo (Snapshot Transactions)**: 40-step history stack capturing full graph snapshots for all discrete user actions (`Ctrl+Z`, `Ctrl+Y` / `Ctrl+Shift+Z`).
 
+### 4.8 MindMap Studio (`/mindmaps/:mindmapId`)
+
+- **Purpose & Scope**: Dedicated visual ideation and system architecture workspace for decomposing complex lending systems into microservice hierarchies, domain boundaries, and conceptual mindmaps.
+- **Hierarchical Tree Model**:
+  - Central Root Node with horizontal sprouting branches and organic curved bezier connectors (`curvature: 0.35`).
+  - Automatic branch color coding across 7 distinct palettes (`blue`, `emerald`, `amber`, `purple`, `rose`, `cyan`, `indigo`), with automatic color inheritance from top-level branches to all descendant sub-branches.
+- **Rich Markdown Capabilities (Formulas, Tables, Code Blocks)**:
+  - **Financial Formulas**: Mathematical rendering for underwriting calculations including Equated Monthly Installments (EMI), Debt-to-Income (DTI), and Loan-to-Value (LTV) ratios (`$$\text{Formula}$$`).
+  - **Underwriting & Pricing Tables**: Embedded tables for credit score tiering, base APR matrices, max LTV caps, processing fee slabs, and STP eligibility (`| Col 1 | Col 2 |`).
+  - **API Contracts & Code Blocks**: Monospaced dark code containers with language tags and one-click clipboard copy for Credit Bureau inquiry payloads (CIBIL/Experian), disbursement webhooks, and Aadhaar e-KYC responses.
+  - **Dynamic Card Sizing**: Two-pass layout engine dynamically allocates width and height for rich content cards to ensure zero overlap with adjacent subtrees.
+- **Productivity & Keyboard Navigation**:
+  - `Tab`: Immediately append a child branch to the currently selected node.
+  - `Enter`: Add a sibling branch directly below/after the active node.
+  - `Double-Click` or `Space`: Trigger inline text editing with auto-selection and focus.
+  - `Delete` / `Backspace`: Remove the active branch and recursively prune its entire subtree.
+  - `Escape`: Deselect node or dismiss active text editing without saving.
+  - `Ctrl+Z` / `Ctrl+Y`: Full undo/redo transaction stack for all tree operations.
+- **Subtree Collapse & Expand**:
+  - Nodes with children feature a collapse badge. Collapsing hides all descendants and renders a prominent child count pill (`+N`).
+  - Studio top navbar includes one-click "Expand All" and "Collapse All" actions.
+- **Bidirectional Markdown Synchronization**:
+  - Fully compatible with standard indented markdown format (`# Root \n  - Branch \n    - Sub-branch`), including indented tables, formulas, and code fences.
+  - Studio includes a Markdown modal to inspect, copy, download `.md`, or paste external markdown to immediately rebuild the mindmap.
+- **Baseline Architecture in Creation Dialog & Showcase**:
+  - Creation modal provides two clean baseline options: **Blank Canvas** (opens journey studio) and **Blank MindMap** (opens mindmap studio).
+  - Home page features a dedicated **MindMaps & Architecture Trees** section with pin/unpin, delete, and quick-open capabilities. Pinned mindmaps appear first.
+  - Built-in rich showcase: _Loan Journey Underwriting & Calculation Matrix_ featuring formulas, tables, and JSON code snippets.
+
 ---
 
 ## 5. Non-Functional Requirements
